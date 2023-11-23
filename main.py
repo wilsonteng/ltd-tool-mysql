@@ -20,7 +20,6 @@ mysql_config = {
     'raise_on_warnings': True
     }
 
-
 def connect_to_mysql(config, attempts=3, delay=2):
     attempt = 1
 
@@ -89,7 +88,10 @@ def check_if_data_useful(input_data) -> bool:
     if (0 < len(input_data[0]) < 4 and
         0 < len(input_data[1]) < 4 and
         0 < len(input_data[2]) < 7):
+            print(input_data)
             return True
+
+    return False
 
 def clean_data(raw_data : str) -> list:
     """
@@ -103,34 +105,33 @@ def clean_data(raw_data : str) -> list:
     new_list = []
 
     for game in data_dict:
-        for player in game:
-            for build in player["playersData"]["leaksPerWave"]:
-                if check_if_data_useful(build):
-                    # creating a new dictionary with only the data we need
-                    player_dict = {}
-                    player_dict["id"] = game["_id"] + player["playerSlot"]
-                    player_dict["version"] = game["version"]
-                    player_dict["date"] = game["date"]
-                    player_dict["legion"] = player["legion"]
-                    player_dict["buildPerWave"] = player["buildPerWave"][:3]
-                    player_dict["mercenariesReceivedPerWave"] = player["mercenariesReceivedPerWave"][:3]
-                    player_dict["leaksPerWave"] = player["leaksPerWave"][:3]
+        for player in game["playersData"]:
+            if check_if_data_useful(player["leaksPerWave"]):
+                # creating a new dictionary with only the data we need
+                player_dict = {}
+                player_dict["id"] = game["_id"]
+                player_dict["version"] = game["version"]
+                player_dict["date"] = game["date"]
+                player_dict["legion"] = player["legion"]
+                player_dict["buildPerWave"] = player["buildPerWave"][:3]
+                player_dict["mercenariesReceivedPerWave"] = player["mercenariesReceivedPerWave"][:3]
+                player_dict["leaksPerWave"] = player["leaksPerWave"][:3]
 
-                    new_list.append(player_dict)
-    
+                new_list.append(player_dict)
+
     return new_list
 
-with open(/home/wilson/git/legiontd_tool/data/json_data_20231113-150304.json, "r") as f:
+with open("/home/wilson/git/legiontd_tool/data/json_data_20231113-092359.json", "r") as f:
     json_data = json.loads(f.read())
 
-print(clean_data(json_data))
-
-
+clean_data(json_data)
 
 def write_sql_insert_statement() -> str:
     """
     Formats the data into an SQL insert statement.
     """
+    
+
 
 def insert_into_mysql():
     """
