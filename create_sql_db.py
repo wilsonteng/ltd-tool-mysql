@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import errorcode
 from dotenv import load_dotenv
+import os
 load_dotenv()
 
 mysql_config = {
@@ -11,23 +12,23 @@ mysql_config = {
     'raise_on_warnings': True
     }
 
-cnx = mysql.connector.connect(**config)
+cnx = mysql.connector.connect(**mysql_config)
 cursor = cnx.cursor()
 
-DB_NAME = 'legion_td_tool'
+DB_NAME = 'legion_td'
 
 TABLES = {}
-TABLES['MATCH_DATA'] = (
-    "CREATE TABLE `MATCH_DATA` ("
-    "  `BUILD_ID` int(11) NOT NULL AUTO_INCREMENT,"
-    "  `GAME_ID` varchar(50) NOT NULL,"
-    "  `GAME_VERSION` varchar(50) NOT NULL,"
+TABLES['match_data'] = (
+    "CREATE TABLE `match_data` ("
+    "  `BUILD_ID` int NOT NULL AUTO_INCREMENT,"
+    "  `GAME_ID` varchar(255) NOT NULL,"
+    "  `GAME_VERSION` varchar(255) NOT NULL,"
     "  `GAME_DATE` varchar(50) NOT NULL,"
     "  `PLAYER_LEGION` varchar(20) NOT NULL,"
-    "  `PLAYER_BUILDPERWAVE` varchar(255) NOT NULL,"
-    "  `PLAYER_MERCSRECEIVED` varchar(255) NOT NULL,"
-    "  `PLAYER_LEAKSPERWAVE` varchar(255) NOT NULL,"
-    "  PRIMARY KEY (`emp_no`)"
+    "  `PLAYER_BUILDPERWAVE` varchar(1000) NOT NULL,"
+    "  `PLAYER_MERCSRECEIVED` varchar(1000) NOT NULL,"
+    "  `PLAYER_LEAKSPERWAVE` varchar(1000) NOT NULL,"
+    "  PRIMARY KEY (`BUILD_ID`)"
     ") ENGINE=InnoDB")
 
 def create_database(cursor):

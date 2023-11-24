@@ -88,7 +88,6 @@ def check_if_data_useful(input_data) -> bool:
     if (0 < len(input_data[0]) < 4 and
         0 < len(input_data[1]) < 4 and
         0 < len(input_data[2]) < 7):
-            print(input_data)
             return True
 
     return False
@@ -109,57 +108,62 @@ def clean_data(raw_data : str) -> list:
             if check_if_data_useful(player["leaksPerWave"]):
                 # creating a new dictionary with only the data we need
                 player_dict = {}
-                player_dict["id"] = game["_id"]
+                player_dict["game_id"] = game["_id"]
                 player_dict["version"] = game["version"]
                 player_dict["date"] = game["date"]
                 player_dict["legion"] = player["legion"]
-                player_dict["buildPerWave"] = player["buildPerWave"][:3]
-                player_dict["mercenariesReceivedPerWave"] = player["mercenariesReceivedPerWave"][:3]
-                player_dict["leaksPerWave"] = player["leaksPerWave"][:3]
+                player_dict["buildPerWave"] = str(player["buildPerWave"][:3])
+                player_dict["mercenariesReceivedPerWave"] = str(player["mercenariesReceivedPerWave"][:3])
+                player_dict["leaksPerWave"] = str(player["leaksPerWave"][:3])
 
                 new_list.append(player_dict)
 
     return new_list
 
-with open("/home/wilson/git/legiontd_tool/data/json_data_20231113-092359.json", "r") as f:
+with open("/root/git/ltd-tool-mysql/data/json_data_20231113-092359.json", "r") as f:
     json_data = json.loads(f.read())
 
 clean_data(json_data)
 
-def write_sql_insert_statement() -> str:
+def write_sql_insert_statement(input_data):
     """
     Formats the data into an SQL insert statement.
+    Takes in entire input data
     """
-    
 
+    add_match_data = ("INSERT INTO match_data "
+                      "(GAME_ID, GAME_VERSION, GAME_DATE, PLAYER_LEGION, PLAYER_BUILDPERWAVE, PLAYER_MERCSRECEIVED, PLAYER_LEAKSPERWAVE )"
+                      "VALUES (%(game_id)s, %(version)s, %(date)s, %(legion)s, %(buildPerWave)s, %(mercenariesReceivedPerWave)s, %(leaksPerWave)s)")
+    
+    cnx = connect_to_mysql(mysql_config)
+    cursor = cnx.cursor()
+    for row in input_data:
+        cursor.execute(add_match_data, row)
+        print("Inserted: ", row["game_id"])
+        cnx.commit()
+    
+    return None
+
+with open("/root/git/ltd-tool-mysql/data/json_data_20231113-092359.json", "r") as f:
+    json_data = json.loads(f.read())
+
+cleaned_data = clean_data(json_data)
+
+write_sql_insert_statement(cleaned_data)
 
 def insert_into_mysql():
     """
     Inserts the data into mysql
     """
+    pass
     # cnx commit
 
 
 # close cursor
 
-#cnx = connect_to_mysql(mysql_config, attempts=3, delay=2)
-#print(cnx)
 
 
 # Close mysql connection
 
 def main():
-    
-    big_array = [] # make one big array before inserting into sql
-    start, end = 0, 2 #1000 x 50 is the max per day
-    limit = 50
-
-    for i in range(start, end):
-        offset = i * int(limit)
-        data_normal = make_api_request(offset, "Normal")
-        data_classic = make_api_request(offset, "Classic")
-        if not data_normal or not data_classic: 
-            print("Error!")
-            break # break if bad http request so big_array still gets written
-        big_array.extend(clean_data(data_normal))
-        big_array.extend(clean_data(data_classic))
+    pass
