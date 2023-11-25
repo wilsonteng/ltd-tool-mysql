@@ -24,6 +24,8 @@ TABLES['match_data'] = (
     "  `GAME_ID` varchar(255) NOT NULL,"
     "  `GAME_VERSION` varchar(255) NOT NULL,"
     "  `GAME_DATE` varchar(50) NOT NULL,"
+    "  `queueType` varchar(50) NOT NULL,"
+    "  `PLAYER_NAME` varchar(50) NOT NULL,"
     "  `PLAYER_LEGION` varchar(20) NOT NULL,"
     "  `PLAYER_BUILDPERWAVE` varchar(1000) NOT NULL,"
     "  `PLAYER_MERCSRECEIVED` varchar(1000) NOT NULL,"

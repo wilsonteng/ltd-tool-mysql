@@ -111,6 +111,8 @@ def clean_data(raw_data : str) -> list:
                 player_dict["game_id"] = game["_id"]
                 player_dict["version"] = game["version"]
                 player_dict["date"] = game["date"]
+                player_dict["queueType"] = game["queueType"]
+                player_dict["playerName"] = player["playerName"]
                 player_dict["legion"] = player["legion"]
                 player_dict["buildPerWave"] = str(player["buildPerWave"][:3])
                 player_dict["mercenariesReceivedPerWave"] = str(player["mercenariesReceivedPerWave"][:3])
@@ -120,11 +122,6 @@ def clean_data(raw_data : str) -> list:
 
     return new_list
 
-with open("/root/git/ltd-tool-mysql/data/json_data_20231113-092359.json", "r") as f:
-    json_data = json.loads(f.read())
-
-clean_data(json_data)
-
 def write_sql_insert_statement(input_data):
     """
     Formats the data into an SQL insert statement.
@@ -132,8 +129,8 @@ def write_sql_insert_statement(input_data):
     """
 
     add_match_data = ("INSERT INTO match_data "
-                      "(GAME_ID, GAME_VERSION, GAME_DATE, PLAYER_LEGION, PLAYER_BUILDPERWAVE, PLAYER_MERCSRECEIVED, PLAYER_LEAKSPERWAVE )"
-                      "VALUES (%(game_id)s, %(version)s, %(date)s, %(legion)s, %(buildPerWave)s, %(mercenariesReceivedPerWave)s, %(leaksPerWave)s)")
+                      "(GAME_ID, GAME_VERSION, GAME_DATE, queueType, PLAYER_NAME, PLAYER_LEGION, PLAYER_BUILDPERWAVE, PLAYER_MERCSRECEIVED, PLAYER_LEAKSPERWAVE )"
+                      "VALUES (%(game_id)s, %(version)s, %(queueType)s, %(date)s, %(playerName)s, %(legion)s, %(buildPerWave)s, %(mercenariesReceivedPerWave)s, %(leaksPerWave)s)")
     
     cnx = connect_to_mysql(mysql_config)
     cursor = cnx.cursor()
@@ -144,26 +141,14 @@ def write_sql_insert_statement(input_data):
     
     return None
 
+# test code
+
 with open("/root/git/ltd-tool-mysql/data/json_data_20231113-092359.json", "r") as f:
     json_data = json.loads(f.read())
 
 cleaned_data = clean_data(json_data)
 
 write_sql_insert_statement(cleaned_data)
-
-def insert_into_mysql():
-    """
-    Inserts the data into mysql
-    """
-    pass
-    # cnx commit
-
-
-# close cursor
-
-
-
-# Close mysql connection
 
 def main():
     pass
