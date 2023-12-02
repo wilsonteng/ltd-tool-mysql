@@ -1,7 +1,7 @@
 # Attempt mysql connection
 import requests
 import json
-from datetime import date, datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 import mysql.connector
@@ -58,24 +58,29 @@ def connect_to_mysql(config, attempts=3, delay=2):
             attempt += 1
     return None
 
-def make_api_request(offset : int, queuetype : str) -> list:
+def one_api_request(limit: int, offset : int, queuetype : str) -> list:
     """
     Makes the API request to Legion TD API
     Returns a dictionary containing the data from api call
     """
 
+    api_url = "https://apiv2.legiontd2.com"
     headers = {'x-api-key': ltd_api_key, 'accept': 'application/json'}
-
-    URL = f"""{ltd_api_key}/games?limit={limit}&offset={offset}&sortBy=date&sortDirection=1&includeDetails=true&countResults=false&queueType={queuetype}"""
-
-    r = requests.get(URL, headers=headers)
-    if not r.ok:
-        print(r, "Response not OK")
-        return False
     
-    print(f"Retrieving data for {offset} to {offset + int(limit)} of {limit * end} for queueType {queuetype}. Status Code: {r.status_code}")
+    dateBefore = datetime.strftime(datetime.utcnow(), '%Y-%m-%d') # YYYY-MM-DD
+    dateAfter = datetime.strftime(datetime.utcnow() - timedelta(1), '%Y-%m-%d') # One Day Ago
+    URL = f"""{api_url}/games?limit={limit}&offset={offset}&sortBy=date&sortDirection=1&dateBefore={dateBefore}&dateAfter={dateAfter}&includeDetails=true&countResults=false&queueType={queuetype}"""
+    
+    try:
+        r = requests.get(URL, headers=headers)
+        r.raise_for_status()
+    except requests.exceptions.RequestException as e:  # This is the correct syntax
+        print(r, "Response not OK")
+        raise SystemExit(e)
 
-    return r.text
+    print(f"Retrieving data for {offset} to {offset + int(limit)} for queueType {queuetype}. Status Code: {r.status_code}")
+    
+    return json.loads(r.text)
 
 def check_if_data_useful(input_data) -> bool:
     """
@@ -92,25 +97,26 @@ def check_if_data_useful(input_data) -> bool:
 
     return False
 
-def clean_data(raw_data : str) -> list:
+def filter_data(raw_data : str) -> list:
     """
-    Takes in entire api return in string format.
-    Drops columns from both the outer match dictionary and the nested playersData dictionary
-    Returns the updated dictionary
+    Takes in entire api json return in string format.
+    Returns a dictionary containing only items we want to keep
     """
 
     number_of_waves_to_keep = 3
-    data_dict = raw_data
     new_list = []
+    
+    date_format = '%Y-%m-%dT%H:%M:%S%Z'
+    date_new_format = '%Y-%m-%d %H:%M:%S' 
 
-    for game in data_dict:
+    for game in raw_data:
         for player in game["playersData"]:
             if check_if_data_useful(player["leaksPerWave"]):
                 # creating a new dictionary with only the data we need
                 player_dict = {}
                 player_dict["game_id"] = game["_id"]
                 player_dict["version"] = game["version"]
-                player_dict["date"] = game["date"]
+                player_dict["date"] = datetime.datetime.strptime(game["date"], date_format).strftime(date_new_format)
                 player_dict["queueType"] = game["queueType"]
                 player_dict["playerName"] = player["playerName"]
                 player_dict["legion"] = player["legion"]
@@ -141,14 +147,20 @@ def write_sql_insert_statement(input_data):
     
     return None
 
-# test code
-
-with open("/root/git/ltd-tool-mysql/data/json_data_20231113-092359.json", "r") as f:
-    json_data = json.loads(f.read())
-
-cleaned_data = clean_data(json_data)
-
-write_sql_insert_statement(cleaned_data)
-
 def main():
-    pass
+    
+    start, end = 0, 10
+    limit = 50
+    print("Starting")
+
+    for i in range(start, end):
+        offset = i * int(limit)
+        data = one_api_request(limit, offset, "Normal")
+        data_two = one_api_request(limit, offset, "Classic")
+
+        filtered = filter_data(data)
+        filtered_two = filter_data(data_two)
+        write_sql_insert_statement(filtered)
+        write_sql_insert_statement(filtered_two)
+
+main()

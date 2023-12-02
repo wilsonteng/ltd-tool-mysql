@@ -23,7 +23,7 @@ TABLES['match_data'] = (
     "  `BUILD_ID` int NOT NULL AUTO_INCREMENT,"
     "  `GAME_ID` varchar(255) NOT NULL,"
     "  `GAME_VERSION` varchar(255) NOT NULL,"
-    "  `GAME_DATE` varchar(50) NOT NULL,"
+    "  `GAME_DATE` DATE NOT NULL,"
     "  `queueType` varchar(50) NOT NULL,"
     "  `PLAYER_NAME` varchar(50) NOT NULL,"
     "  `PLAYER_LEGION` varchar(20) NOT NULL,"
