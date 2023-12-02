@@ -67,10 +67,10 @@ def one_api_request(limit: int, offset : int, queuetype : str) -> list:
     api_url = "https://apiv2.legiontd2.com"
     headers = {'x-api-key': ltd_api_key, 'accept': 'application/json'}
     
-    dateBefore = datetime.strftime(datetime.utcnow(), '%Y-%m-%d') # YYYY-MM-DD
-    dateAfter = datetime.strftime(datetime.utcnow() - timedelta(1), '%Y-%m-%d') # One Day Ago
+    dateBefore = datetime.strftime(datetime.utcnow() - timedelta(1), '%Y-%m-%d') # YYYY-MM-DD
+    dateAfter = datetime.strftime(datetime.utcnow() - timedelta(2), '%Y-%m-%d') # One Day Ago
     URL = f"""{api_url}/games?limit={limit}&offset={offset}&sortBy=date&sortDirection=1&dateBefore={dateBefore}&dateAfter={dateAfter}&includeDetails=true&countResults=false&queueType={queuetype}"""
-    
+
     try:
         r = requests.get(URL, headers=headers)
         r.raise_for_status()
@@ -106,7 +106,7 @@ def filter_data(raw_data : str) -> list:
     number_of_waves_to_keep = 3
     new_list = []
     
-    date_format = '%Y-%m-%dT%H:%M:%S%Z'
+    date_format = "%Y-%m-%dT%H:%M:%S.%f%z"
     date_new_format = '%Y-%m-%d %H:%M:%S' 
 
     for game in raw_data:
@@ -116,7 +116,7 @@ def filter_data(raw_data : str) -> list:
                 player_dict = {}
                 player_dict["game_id"] = game["_id"]
                 player_dict["version"] = game["version"]
-                player_dict["date"] = datetime.datetime.strptime(game["date"], date_format).strftime(date_new_format)
+                player_dict["date"] = datetime.strptime(game["date"], date_format).date()
                 player_dict["queueType"] = game["queueType"]
                 player_dict["playerName"] = player["playerName"]
                 player_dict["legion"] = player["legion"]
@@ -136,11 +136,12 @@ def write_sql_insert_statement(input_data):
 
     add_match_data = ("INSERT INTO match_data "
                       "(GAME_ID, GAME_VERSION, GAME_DATE, queueType, PLAYER_NAME, PLAYER_LEGION, PLAYER_BUILDPERWAVE, PLAYER_MERCSRECEIVED, PLAYER_LEAKSPERWAVE )"
-                      "VALUES (%(game_id)s, %(version)s, %(queueType)s, %(date)s, %(playerName)s, %(legion)s, %(buildPerWave)s, %(mercenariesReceivedPerWave)s, %(leaksPerWave)s)")
+                      "VALUES (%(game_id)s, %(version)s, %(date)s, %(queueType)s, %(playerName)s, %(legion)s, %(buildPerWave)s, %(mercenariesReceivedPerWave)s, %(leaksPerWave)s)")
     
     cnx = connect_to_mysql(mysql_config)
     cursor = cnx.cursor()
     for row in input_data:
+        print(row)
         cursor.execute(add_match_data, row)
         print("Inserted: ", row["game_id"])
         cnx.commit()
@@ -156,11 +157,11 @@ def main():
     for i in range(start, end):
         offset = i * int(limit)
         data = one_api_request(limit, offset, "Normal")
-        data_two = one_api_request(limit, offset, "Classic")
+        #data_two = one_api_request(limit, offset, "Classic")
 
         filtered = filter_data(data)
-        filtered_two = filter_data(data_two)
+        #filtered_two = filter_data(data_two)
         write_sql_insert_statement(filtered)
-        write_sql_insert_statement(filtered_two)
+        #write_sql_insert_statement(filtered_two)
 
 main()

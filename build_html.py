@@ -144,7 +144,7 @@ def build_output(filtered_data):
         total_average_leak = round(sum(leak_percentages) / len(leak_percentages))
 
         htmlpage += f"""<h3>{counter} – Game ID: {build['game_id']}</h3>""" # Game ID
-        htmlpage += f"""<p>{build["playerName"]} // {build['queueType']} // {build['legion']} // {build['date'].split("T")[0]} // Version {build['version']} </p>""" # Player Name
+        htmlpage += f"""<p>{build["playerName"]} // {build['queueType']} // {build['legion']} // {build['date']} // Version {build['version']} </p>""" # Player Name
 
         htmlpage += f"""<p class="leakpercent">Total Average Leak: <span>{total_average_leak}%</span></p>"""
         
