@@ -58,7 +58,7 @@ def connect_to_mysql(config, attempts=3, delay=2):
             attempt += 1
     return None
 
-def one_api_request(limit: int, offset : int, queuetype : str) -> list:
+def one_api_request(limit: int, offset : int, queuetype : str):
     """
     Makes the API request to Legion TD API
     Returns a dictionary containing the data from api call
@@ -74,9 +74,9 @@ def one_api_request(limit: int, offset : int, queuetype : str) -> list:
     try:
         r = requests.get(URL, headers=headers)
         r.raise_for_status()
-    except requests.exceptions.RequestException as e:  # This is the correct syntax
-        print(r, "Response not OK")
-        raise SystemExit(e)
+    except requests.exceptions.RequestException as e:
+        print(e, "Response not OK")
+        return False
 
     print(f"Retrieving data for {offset} to {offset + int(limit)} for queueType {queuetype}. Status Code: {r.status_code}")
     
@@ -90,9 +90,9 @@ def check_if_data_useful(input_data) -> bool:
     if len(input_data) < 3:
         return False
 
-    if (0 < len(input_data[0]) < 4 and
-        0 < len(input_data[1]) < 4 and
-        0 < len(input_data[2]) < 7):
+    if (0 < len(input_data[0]) < 10 and
+        0 < len(input_data[1]) < 10 and
+        0 < len(input_data[2]) < 10):
             return True
 
     return False
@@ -107,7 +107,6 @@ def filter_data(raw_data : str) -> list:
     new_list = []
     
     date_format = "%Y-%m-%dT%H:%M:%S.%f%z"
-    date_new_format = '%Y-%m-%d %H:%M:%S' 
 
     for game in raw_data:
         for player in game["playersData"]:
@@ -148,20 +147,29 @@ def write_sql_insert_statement(input_data):
     
     return None
 
-def main():
-    
-    start, end = 0, 10
-    limit = 50
-    print("Starting")
+def api_call_loop(gamemode):
 
+    start, end = 0, 5
+    limit = 50
     for i in range(start, end):
         offset = i * int(limit)
-        data = one_api_request(limit, offset, "Normal")
-        #data_two = one_api_request(limit, offset, "Classic")
+        data = one_api_request(limit, offset, gamemode)
+        
+        if data == False:
+            return False
 
         filtered = filter_data(data)
-        #filtered_two = filter_data(data_two)
         write_sql_insert_statement(filtered)
-        #write_sql_insert_statement(filtered_two)
+    
+    return True
+
+
+def main():
+
+    print("Starting")
+
+    api_call_loop("Normal")
+    #api_call_loop("Classic")
+
 
 main()
