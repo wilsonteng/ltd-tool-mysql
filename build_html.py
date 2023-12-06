@@ -117,6 +117,9 @@ def get_unit_string(input):
 
     first = re.split("_", input)
     unit_name = first[0]
+
+    if unit_name == "nekomata":
+        return unit_name.capitalize() + " " + first[-1][-1]
     
     return unit_name.capitalize()
 

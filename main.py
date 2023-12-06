@@ -67,15 +67,15 @@ def one_api_request(limit: int, offset : int, queuetype : str):
     api_url = "https://apiv2.legiontd2.com"
     headers = {'x-api-key': ltd_api_key, 'accept': 'application/json'}
     
-    dateBefore = datetime.strftime(datetime.utcnow() - timedelta(1), '%Y-%m-%d') # YYYY-MM-DD
-    dateAfter = datetime.strftime(datetime.utcnow() - timedelta(2), '%Y-%m-%d') # One Day Ago
+    dateBefore = datetime.strftime(datetime.utcnow() - timedelta(0), '%Y-%m-%d') # YYYY-MM-DD
+    dateAfter = datetime.strftime(datetime.utcnow() - timedelta(1), '%Y-%m-%d') # One Day Ago
     URL = f"""{api_url}/games?limit={limit}&offset={offset}&sortBy=date&sortDirection=1&dateBefore={dateBefore}&dateAfter={dateAfter}&includeDetails=true&countResults=false&queueType={queuetype}"""
 
     try:
         r = requests.get(URL, headers=headers)
         r.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(e, "Response not OK")
+        print(e)
         return False
 
     print(f"Retrieving data for {offset} to {offset + int(limit)} for queueType {queuetype}. Status Code: {r.status_code}")
@@ -90,9 +90,9 @@ def check_if_data_useful(input_data) -> bool:
     if len(input_data) < 3:
         return False
 
-    if (0 < len(input_data[0]) < 10 and
-        0 < len(input_data[1]) < 10 and
-        0 < len(input_data[2]) < 10):
+    if (0 < len(input_data[0]) < 4 and
+        0 < len(input_data[1]) < 4 and
+        0 < len(input_data[2]) < 7):
             return True
 
     return False
@@ -149,13 +149,15 @@ def write_sql_insert_statement(input_data):
 
 def api_call_loop(gamemode):
 
-    start, end = 0, 5
-    limit = 50
+    start, end = 32, 100
+    limit = 20
     for i in range(start, end):
         offset = i * int(limit)
         data = one_api_request(limit, offset, gamemode)
-        
-        if data == False:
+        time.sleep(0.5)
+
+        if not data:
+            print("Return was empty or ran out of data")
             return False
 
         filtered = filter_data(data)
@@ -163,13 +165,12 @@ def api_call_loop(gamemode):
     
     return True
 
-
 def main():
 
     print("Starting")
 
-    api_call_loop("Normal")
-    #api_call_loop("Classic")
+    #api_call_loop("Normal")
+    api_call_loop("Classic")
 
 
 main()
