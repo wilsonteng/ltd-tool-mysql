@@ -169,8 +169,8 @@ def main():
 
     print("Starting")
 
-    #api_call_loop("Normal")
-    #api_call_loop("Classic")
+    api_call_loop("Normal")
+    api_call_loop("Classic")
 
     import read_sql_data
     import build_html
