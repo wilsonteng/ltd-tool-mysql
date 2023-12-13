@@ -58,7 +58,6 @@ def connect_to_mysql(config, attempts=3, delay=2):
             attempt += 1
     return None
 
-
 def sql_query_to_list():
     cnx = connect_to_mysql(mysql_config)
     cursor = cnx.cursor()
@@ -83,5 +82,3 @@ def sql_query_to_list():
         total_list.append(player_dict)
     
     return total_list
-        
-sql_query_to_list()

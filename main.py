@@ -149,16 +149,16 @@ def write_sql_insert_statement(input_data):
 
 def api_call_loop(gamemode):
 
-    start, end = 32, 100
+    start, end = 0, 1000
     limit = 20
     for i in range(start, end):
         offset = i * int(limit)
         data = one_api_request(limit, offset, gamemode)
-        time.sleep(0.5)
+        time.sleep(0.5) # To prevent hitting rate limit
 
         if not data:
             print("Return was empty or ran out of data")
-            return False
+            return
 
         filtered = filter_data(data)
         write_sql_insert_statement(filtered)
@@ -170,7 +170,15 @@ def main():
     print("Starting")
 
     #api_call_loop("Normal")
-    api_call_loop("Classic")
+    #api_call_loop("Classic")
+
+    import read_sql_data
+    import build_html
+
+    #unit_dictionary = build_html.create_unit_dictionary()
+    data = read_sql_data.sql_query_to_list()
+
+    build_html.build_output(data)
 
 
 main()
