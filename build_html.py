@@ -241,7 +241,7 @@ def build_output(filtered_data):
     #outpath = dir / f'output{timestamp}.html'
     #outpath = dir / f'output.html'
 
-    outpath = '/home/wilsonwteng/git/fiesta.wilsonteng.github.io/index.html'
+    outpath = '/home/wilsonwteng/git/proleak.github.io/index.html'
     f = open(outpath, 'w')
 
     f.write(htmlpage)

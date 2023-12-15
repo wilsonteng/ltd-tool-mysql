@@ -175,7 +175,6 @@ def main():
     import read_sql_data
     import build_html
 
-    #unit_dictionary = build_html.create_unit_dictionary()
     data = read_sql_data.sql_query_to_list()
 
     build_html.build_output(data)
