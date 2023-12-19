@@ -21,7 +21,9 @@ unit_leak_dictionary = {
     "Dragon Turtle" : 12,
     "Lizard" : 12,
     "Brute" : 15,
-    "Fiend" : 18
+    "Fiend" : 18,
+    "Hermit" : 20,
+    "Dino" : 24
 }
 
 def calculate_leak_percentages(data : list) -> int:

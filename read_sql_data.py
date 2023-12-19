@@ -71,7 +71,7 @@ def sql_query_to_list():
         player_dict = {}
         player_dict["game_id"] = row[1]
         player_dict["version"] = row[2]
-        player_dict["date"] = row[3]
+        player_dict["date"] = str(row[3]) #JSON Dumps does not like datetime object
         player_dict["queueType"] = row[4]
         player_dict['playerName'] = row[5]
         player_dict["legion"] = row[6]
@@ -82,3 +82,11 @@ def sql_query_to_list():
         total_list.append(player_dict)
     
     return total_list
+
+
+test = sql_query_to_list()
+import json
+
+with open('data.json', 'w') as f:
+    json.dump(test, f)
+
